@@ -4,6 +4,7 @@ import numpy as np
 import random as rn
 import graph_ploting as gp
 from typing import Callable
+from graph_utils import path2graph
 
 
 class Maze:
@@ -12,7 +13,10 @@ class Maze:
     _width: int
     _height: int
     _bounds: tuple[int, int]
-    _maze: nx.Graph
+    _problem: nx.Graph
+    _solution: nx.Graph
+    _generator: Callable[[nx.Graph], nx.Graph]
+    _agent: Callable[[nx.Graph, tuple[int, int], tuple[int, int]], list[int]]
 
     @property
     def width(self):
@@ -26,6 +30,12 @@ class Maze:
     def nodes(self):
         return self._nodes
 
+    def setGenerator(self, value):
+        self._generator = value
+
+    def setAgent(self, value):
+        self._agent = value
+
     def __init__(self, width: int, height: int, bounds: tuple[int, int]):
         self._width = width
         self._height = height
@@ -36,7 +46,7 @@ class Maze:
         for i in range(height):
             for j in range(width):
                 self._nodes[i][j] = (j, i)
-        
+
         self._nodes.flags.writeable = False
 
         self._G.add_nodes_from(self._nodes.flatten().tolist())
@@ -57,9 +67,14 @@ class Maze:
                     weight=rn.randrange(bounds[0], bounds[1] + 1),
                 )
 
-    def generate(self, generator: Callable[[nx.Graph], nx.Graph]) -> nx.Graph:
-        self._maze = generator(self._G)
-        return self._maze
+    def generate(self) -> nx.Graph:
+        self._problem = self._generator(self._G)
+        return self._problem
+
+    def solve(self, start: tuple[int, int], goal: tuple[int, int]) -> nx.graph:
+        path = self._agent(self._G, start, goal)
+        self._solution = path2graph(path)
+        return self._solution
 
 
 def _maze_segments(maze: Maze) -> tuple[list[int], list[int]]:
@@ -68,13 +83,13 @@ def _maze_segments(maze: Maze) -> tuple[list[int], list[int]]:
     nodes = maze._nodes
     for i in range(maze._height):
         for j in range(maze._width - 1):
-            if not maze._maze.has_edge(nodes[i][j], nodes[i][j + 1]):
+            if not maze._problem.has_edge(nodes[i][j], nodes[i][j + 1]):
                 center = (nodes[i][j][0] + nodes[i][j + 1][0]) / 2
                 x.extend([center, center])
                 y.extend([nodes[i][j][1] + 0.5, nodes[i][j][1] - 0.5])
     for i in range(maze._height - 1):
         for j in range(maze._width):
-            if not maze._maze.has_edge(nodes[i][j], nodes[i + 1][j]):
+            if not maze._problem.has_edge(nodes[i][j], nodes[i + 1][j]):
                 middle = (nodes[i][j][1] + nodes[i + 1][j][1]) / 2
                 y.extend([middle, middle])
                 x.extend([nodes[i][j][0] + 0.5, nodes[i][j][0] - 0.5])
