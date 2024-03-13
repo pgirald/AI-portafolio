@@ -4,7 +4,7 @@ import numpy as np
 import random as rn
 import graph_ploting as gp
 from typing import Callable
-from graph_utils import path2graph
+import graph_utils as gu
 
 
 class Maze:
@@ -69,11 +69,12 @@ class Maze:
 
     def generate(self) -> nx.Graph:
         self._problem = self._generator(self._G)
+        gu.remove_weights(self._problem)
         return self._problem
 
     def solve(self, start: tuple[int, int], goal: tuple[int, int]) -> nx.graph:
-        path = self._agent(self._G, start, goal)
-        self._solution = path2graph(path)
+        path = self._agent(self._problem, start, goal)
+        self._solution = gu.path2graph(path)
         return self._solution
 
 
