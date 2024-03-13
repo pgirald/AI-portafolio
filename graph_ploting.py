@@ -25,8 +25,10 @@ def _nodes(G: nx.Graph) -> tuple[list[float | int], list[float | int]]:
     return (x, y)
 
 
-def _weightof(G: nx.Graph, edge) -> float:
-    return G.get_edge_data(edge[0], edge[1])["weight"]
+def _weightof(G: nx.Graph, edge,weight: str = "weight") -> float:
+    if weight in G[edge[0]][edge[1]]:
+        return G.get_edge_data(edge[0], edge[1])[weight]
+    return ""
 
 
 def _plot_edges(
