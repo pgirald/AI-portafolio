@@ -101,8 +101,8 @@ def _maze_segments(maze: Maze) -> tuple[list[int], list[int]]:
         nodes[-1][0][1] + 0.5,
     )
     bottom_right = (
-        nodes[maze._width - 1][maze._height - 1][0] + 0.5,
-        nodes[maze._width - 1][maze._height - 1][1] + 0.5,
+        nodes[-1][-1][0] + 0.5,
+        nodes[-1][-1][1] + 0.5,
     )
 
     x.extend(
